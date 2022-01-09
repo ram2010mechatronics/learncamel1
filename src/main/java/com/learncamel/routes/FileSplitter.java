@@ -20,7 +20,7 @@ public class FileSplitter {
                         .unmarshal(bindy)
                         .to("log:?level=INFO&showBody=true&showHeaders=true")
                         .process(new IPAddressProcessor())
-                        .to("direct:output");
+                        .to("file:data/csv/input?fileName=OutputFile.csv");
             }
         });
         context.start();
