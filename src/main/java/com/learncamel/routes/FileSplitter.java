@@ -1,5 +1,6 @@
 package com.learncamel.routes;
 
+import com.learncamel.domain.IPAddress;
 import com.learncamel.domain.IPMapper;
 import com.learncamel.processor.IPAddressProcessor;
 import org.apache.camel.CamelContext;
@@ -12,20 +13,28 @@ public class FileSplitter {
     public static void main(String[] args) throws Exception {
 
         DataFormat bindy = new BindyCsvDataFormat(IPMapper.class);
+        DataFormat ip = new BindyCsvDataFormat(IPAddress.class);
         CamelContext context = new DefaultCamelContext();
         context.addRoutes(new RouteBuilder() {
             @Override
             public void configure() {
-                from("file:data/csv/input?fileName=TestFile.csv&noop=true")
+
+                from("file:data/csv/input?fileName=SourceFile.csv&noop=true")
                         .unmarshal(bindy)
-                        .to("log:?level=INFO&showBody=true&showHeaders=true")
                         .process(new IPAddressProcessor())
-                        .to("file:data/csv/input?fileName=OutputFile.csv");
+                        .to("direct:source_record");
+
+                from("file:data/csv/input?fileName=InputFile.csv&noop=true")
+                        .unmarshal(ip)
+                        .pollEnrich("direct:source_record",new RecordsAggregationStrategy())
+                        .to("file:data/csv/output?fileName=OutputFile.csv");
+
             }
         });
         context.start();
+        System.out.println("Started Processing");
         Thread.sleep(5000);
         context.stop();
-        System.out.println("End");
+        System.out.println("Completed...");
     }
 }
