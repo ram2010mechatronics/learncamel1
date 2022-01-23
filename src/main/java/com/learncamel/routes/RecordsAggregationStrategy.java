@@ -25,7 +25,8 @@ public class RecordsAggregationStrategy implements AggregationStrategy {
         for (IPAddress ip : list) {
             sb.append(ip.getIp());
             sb.append("|");
-            Iterable<String> ips = Splitter.on(CharMatcher.anyOf(";,")).split(ip.getIp());
+            Iterable<String> ips;
+            ips = Splitter.on(CharMatcher.anyOf(";,")).split(ip.getIp());
             for (String item: ips) {
                 sb.append(",");
                 sb.append(map.get(item.trim()));
